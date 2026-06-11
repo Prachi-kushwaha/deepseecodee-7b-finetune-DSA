@@ -1,0 +1,95 @@
+model:
+  # Point to your merged SFT model, or the adapter directory
+  sft_model_path: "./outputs/deepseek-dsa-sft/final-merged"
+  base_model_name: "deepseek-ai/deepseek-coder-7b-instruct-v1.5"
+  load_in_4bit: true
+  bnb_4bit_quant_type: "nf4"
+  bnb_4bit_compute_dtype: "bfloat16"
+  bnb_4bit_use_double_quant: true
+  use_flash_attention_2: true
+  trust_remote_code: true
+  gradient_checkpointing: true
+  # When true the SFT model is reused as its own reference (saves VRAM)
+  use_peft_ref_model: true
+
+lora:
+  r: 16
+  lora_alpha: 32
+  lora_dropout: 0.05
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+  bias: "none"
+  task_type: "CAUSAL_LM"
+
+data:
+  # Path to an existing preference dataset, OR leave blank to auto-generate
+  preference_dataset_path: ""
+  # HF hub preference dataset (used when preference_dataset_path is empty)
+  preference_dataset_name: ""
+  # If both above are empty, synthetic pairs are generated from the SFT model
+  generate_synthetic_preferences: true
+  source_dataset_name: "Prachi01/dsa-dataset-unified"
+  num_samples_for_generation: 500   # how many prompts to generate pairs for
+  num_generations_per_prompt: 4     # candidate responses per prompt
+  max_seq_length: 1024
+  max_prompt_length: 512
+  val_split_ratio: 0.05
+  num_proc: 4
+
+dpo:
+  beta: 0.1                   # KL-penalty coefficient (lower = closer to SFT)
+  loss_type: "sigmoid"        # sigmoid | ipo | hinge | robust
+  label_smoothing: 0.0        # > 0 gives conservative DPO
+  reference_free: false       # true = SPIN / reference-free DPO
+
+training:
+  output_dir: "./outputs/deepseek-dsa-dpo"
+  per_device_train_batch_size: 1
+  per_device_eval_batch_size: 1
+  gradient_accumulation_steps: 8
+  learning_rate: 5.0e-5       # DPO needs a lower LR than SFT
+  num_train_epochs: 1
+  warmup_ratio: 0.1
+  lr_scheduler_type: "cosine"
+  optim: "paged_adamw_8bit"
+  bf16: true
+  tf32: true
+  logging_steps: 10
+  eval_steps: 100
+  save_steps: 100
+  save_total_limit: 3
+  load_best_model_at_end: true
+  metric_for_best_model: "eval_rewards/margins"
+  greater_is_better: true
+  dataloader_num_workers: 2
+  report_to: "wandb"
+  run_name: "deepseek-dsa-dpo-v1"
+  seed: 42
+  resume_from_checkpoint: null
+
+scoring:
+  # Scoring strategy for synthetic preference generation
+  # Options: "execution" | "length_penalty" | "judge_llm"
+  strategy: "execution"
+  # execution: run generated code against hidden test cases
+  execution_timeout_seconds: 5
+  # judge_llm: use a separate model to score solutions (slower but better)
+  judge_model: "deepseek-ai/deepseek-coder-7b-instruct-v1.5"
+
+experiment:
+  project_name: "deepseek-dsa-dpo"
+  tags:
+    - "deepseek"
+    - "dsa"
+    - "dpo"
+    - "qlora"
+  notes: "DPO alignment on top of SFT checkpoint"
+  merge_adapter_after_training: true
+  push_to_hub: false
+  hub_model_id: null
