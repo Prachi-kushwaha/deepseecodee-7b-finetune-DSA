@@ -24,8 +24,8 @@ from transformers import (
     PreTrainedTokenizerBase,
 )
 
-from .config import LoRAConfig, ModelConfig
-from .utils import free_memory, log_gpu_memory, log_trainable_parameters
+from config import LoRAConfig, ModelConfig
+from utils import free_memory, log_gpu_memory, log_trainable_parameters
 
 logger = logging.getLogger(__name__)
 

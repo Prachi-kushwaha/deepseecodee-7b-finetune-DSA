@@ -21,13 +21,13 @@ from peft import PeftModel
 from transformers import TrainingArguments
 from trl import SFTTrainer
 
-from .callbacks import (
+from callbacks import (
     EarlyStoppingCallback,
     GpuMemoryCallback,
     SampleGenerationCallback,
 )
-from .config import SFTConfig
-from .utils import free_memory, log_gpu_memory, timer
+from config import SFTConfig
+from utils import free_memory, log_gpu_memory, timer
 
 logger = logging.getLogger(__name__)
 

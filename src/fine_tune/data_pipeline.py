@@ -18,7 +18,7 @@ from datasets import Dataset, DatasetDict, load_dataset
 from trl import DataCollatorForCompletionOnlyLM
 from transformers import PreTrainedTokenizerBase
 
-from .config import DataConfig
+from config import DataConfig
 
 logger = logging.getLogger(__name__)
 

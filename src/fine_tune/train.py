@@ -26,14 +26,11 @@ from pathlib import Path
 # Make sure the package is importable when run from the project root
 sys.path.insert(0, str(Path(__file__).parent))
 
-from src import (
-    SFTConfig,
-    build_datasets,
-    build_model_and_tokenizer,
-    run_training,
-)
-from src.utils import get_logger, set_seed, log_gpu_memory, timer
-
+from config import SFTConfig
+from data_pipeline import build_datasets
+from model_setup import build_model_and_tokenizer
+from trainer import run_training
+from utils import get_logger, set_seed, log_gpu_memory, timer
 
 
 # CLI argument parsing
@@ -48,7 +45,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--config",
         type=str,
-        default="configs/deepseek_dsa.yaml",
+        default=str(Path(__file__).parent / "deepseek_dsa.yaml"),
         help="Path to the YAML configuration file.",
     )
     parser.add_argument(
