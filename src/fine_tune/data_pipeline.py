@@ -23,7 +23,7 @@ from config import DataConfig
 logger = logging.getLogger(__name__)
 
 # Required columns in the raw dataset
-REQUIRED_COLUMNS = {"instruction", "input", "output"}
+REQUIRED_COLUMNS = {"instruction", "output"}
 
 
 #-----------
@@ -43,7 +43,7 @@ def validate_dataset(dataset: Dataset, split: str = "train") -> None:
 def log_data_statistics(dataset: Dataset, split: str = "train") -> None:
     """Log basic statistics about text lengths."""
     lengths = [
-        len(str(r["instruction"])) + len(str(r["input"])) + len(str(r["output"]))
+        len(str(r["instruction"])) + len(str(r["output"]))
         for r in dataset
     ]
     import statistics
